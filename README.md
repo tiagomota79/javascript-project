@@ -2,10 +2,10 @@
 
 The goal of this project is to create a console based game in which you are an adventurer on a board game.  
 The adventurer can move in 4 directions (Up, Down, Left, Right) and interact with different entities (Monster, Tradesman, Item, Dungeon).
-![exibit](exibita.png)
-![exibit](exibitb.png)
-![exibit](exibitc.png)
-![exibit](exibitd.png)
+![exibit](images/exibita.png)
+![exibit](images/exibitb.png)
+![exibit](images/exibitc.png)
+![exibit](images/exibitd.png)
 
 # Game rules
 
@@ -159,3 +159,16 @@ When a player and a monster have the same position, each starts to attack indefi
 - Object.values
 
 All the array methods
+
+## Notes
+
+Use timestamps to avoid having the web browser collapsing your console output:  
+Bad
+
+![notimestamps](images/notimestamps.png)
+
+Good
+
+![timestamps](images/timestamps1.png)
+![timestamps](images/timestamps2.png)
+![timestamps](images/timestamps3.png)
