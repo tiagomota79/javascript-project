@@ -1,3 +1,9 @@
+/*
+NOTE: You will need to add and modify code in this file to complete this project.
+I have defined a few functions and variables to help guide you but that doesn't mean no other variables or functions are necessary.
+If you think you have a better / different way to do things, you are free to do so :)
+*/
+
 const monsterNames = [
   'Bigfoot',
   'Centaur',
