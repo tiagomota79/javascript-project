@@ -24,8 +24,10 @@ const monsterNames = [
 const RARITY_LIST = ['Common', 'Unusual', 'Rare', 'Epic'];
 const GAME_STEPS = ['SETUP_PLAYER', 'SETUP_BOARD', 'GAME_START'];
 let gameStep = 0;
-
 let board = []; // The board holds all the game entities. It is a 2D array.
+
+const items = []; // Array of item objects. These will be used to clone new items with the appropriate properties.
+
 const player = {}; // The player object
 
 // Utility function to print messages with different colors. Usage: print('hello', 'red');
@@ -60,6 +62,9 @@ function useSkill(skillName, target) {}
 // First and last columns are walls
 // All the other entities are grass entities
 function createBoard(rows, columns) {}
+
+// Updates the board by setting the entity at the entity position (an entity has a position property, each board cell holds a reference to the entity at that position)
+function updateBoard(entity) {}
 
 // Sets the position property of the player object to be in the middle of the board
 // You may need to use Math methods such as Math.floor()
