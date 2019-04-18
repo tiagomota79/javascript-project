@@ -155,3 +155,7 @@ When a player and a monster have the same position, each starts to attack indefi
 - setTimeout
 - clearInterval
 - clearTimeout
+- Object.keys
+- Object.values
+
+All the array methods
