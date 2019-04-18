@@ -63,7 +63,9 @@ function useSkill(skillName, target) {}
 // All the other entities are grass entities
 function createBoard(rows, columns) {}
 
-// Updates the board by setting the entity at the entity position (an entity has a position property, each board cell holds a reference to the entity at that position)
+// Updates the board by setting the entity at the entity position
+// An entity has a position property, each board cell is an object with an entity property holding a reference to the entity at that position
+// When a player is on a board cell, the board cell keeps the current entity property (e.g. monster entity at that position) and may need to have an additional property to know the player is there too.
 function updateBoard(entity) {}
 
 // Sets the position property of the player object to be in the middle of the board
