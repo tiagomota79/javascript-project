@@ -56,6 +56,7 @@ function useItem(itemName, target) {}
 
 // Uses a player skill (note: skill is not consumable, it's useable infinitely besides the cooldown wait time)
 // skillName is a string. target is an entity (typically monster).
+// If target is not specified, skill shoud be used on the entity at the same position
 function useSkill(skillName, target) {}
 
 // Sets the board variable to a 2D array of rows and columns
