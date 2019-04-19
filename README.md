@@ -91,7 +91,7 @@ Items have the following properties
 - rarity (number - refer to the RARITY_LIST variable)
 - use (function - expects a target as parameter to specify on which target to use the item)
 
-2 types of objects to implement:  
+3 types of objects to implement:  
 potion:
 
 - name: 'Common potion' (if rarity 0)
@@ -107,6 +107,14 @@ bomb:
 - value: 7
 - rarity: 0
 - use: deals 50hp damage to the specified target
+
+key:
+
+- name: 'Epic key'
+- type: 'key'
+- value: 150
+- rarity: 3
+- use: Unlocks the door to a dungeon
 
 You can tweak the properties and make more item objects
 
@@ -146,6 +154,10 @@ When the player and tradesman have the same position it is possible to buy an it
 
 Dungeon has the following properties (parentheses has type and initial value)
 
+- isLocked (boolean)
+- hasPrincess (boolean)
+- items (array of objects)
+- gold (number)
 - position (object - specified in parameters)
 - type (string - 'dungeon')
 
@@ -167,6 +179,10 @@ When a player and a monster have the same position, each starts to attack indefi
 All the array methods
 
 ## Notes
+
+Use the debugger when you're not sure what's going on. You can just write `debugger;` where you think there is a problem and reload the page, it will stop at the debugger.  
+From there you can go line by line and see where the problem is.  
+Helpful resource: https://javascript.info/debugging-chrome
 
 Use timestamps to avoid having the web browser collapsing your console output:  
 Bad
