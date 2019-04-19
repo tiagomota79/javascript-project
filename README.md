@@ -32,15 +32,15 @@ A position object has 2 properties:
 
 ### Player
 
-The player has the following properties (parentheses has type and initial value)
+The player has the following properties (parentheses has type)
 
 - name (string)
-- level (number - 1)
-- items (array of objects - [])
-- skills (array of objects - [])
-- attack (number - 10)
-- speed (number - 3000)
-- hp (number - 100)
+- level (number)
+- items (array of objects)
+- skills (array of objects - will have 2 skill objects: confuse and steal)
+- attack (number)
+- speed (number)
+- hp (number)
 - gold (number - 0 to start. Can get gold by selling items to the tradesman)
 - exp (number - 0 to start. Experience points, increase when slaying monsters)
 - type (string - 'player')
