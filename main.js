@@ -118,7 +118,7 @@ function setupBoard() {
   printSectionTitle('SETUP BOARD');
   print('Please create a board using initBoard(rows, columns)');
   print(
-    'Setup monsters, items and more using createMonster(attr), createItem(itemIdx, pos), createTradesman(items, pos), createDungeon(pos), updateBoard(entity)'
+    'Setup monsters, items and more using createMonster(attr), createItem(item, pos), createTradesman(items, pos), createDungeon(pos), updateBoard(entity)'
   );
   print("Once you're done, go to the next step with next()");
 }

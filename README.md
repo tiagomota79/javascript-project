@@ -2,10 +2,11 @@
 
 The goal of this project is to create a console based game in which you are an adventurer on a board game.  
 The adventurer can move in 4 directions (Up, Down, Left, Right) and interact with different entities (Monster, Tradesman, Item, Dungeon).
-![exibit](images/exibita.png)
-![exibit](images/exibitb.png)
-![exibit](images/exibitc.png)
-![exibit](images/exibitd.png)
+![preview](images/preview.png)
+
+# Resources
+
+Be sure to check the images for more information on the different features of the game
 
 # Game rules
 
