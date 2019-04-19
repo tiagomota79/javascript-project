@@ -22,13 +22,11 @@ const monsterNames = [
 ];
 
 const RARITY_LIST = ['Common', 'Unusual', 'Rare', 'Epic'];
-const GAME_STEPS = ['SETUP_PLAYER', 'SETUP_BOARD', 'GAME_START'];
-let gameStep = 0;
-let board = []; // The board holds all the game entities. It is a 2D array.
-
 const items = []; // Array of item objects. These will be used to clone new items with the appropriate properties.
-
-const player = {}; // The player object
+const GAME_STEPS = ['SETUP_PLAYER', 'SETUP_BOARD', 'GAME_START'];
+let gameStep = 0; // The current game step, value is index of the GAME_STEPS array.
+let board = []; // The board holds all the game entities. It is a 2D array.
+let player = {}; // The player object
 
 // Utility function to print messages with different colors. Usage: print('hello', 'red');
 function print(arg, color) {
@@ -40,18 +38,16 @@ function print(arg, color) {
 // We set a default value for the count to be 20 (i.e. 20 dashes '-')
 function printSectionTitle(title, count = 20) {}
 
-// Sets the name property for the player and prints a message to notice the user of the change
-function setName(name) {}
-
 // Returns a new object with the same keys and values as the input object
 function clone(entity) {}
 
 // returns true or false to indicate whether 2 different objects have the same keys and values
-function assertEquality(original, clone) {}
+function assertEqual(obj1, obj2) {}
 
 // Uses a player item (note: this consumes the item, need to remove it after use)
-// itemName is a string. target is an entity (typically player)
-function useItem(itemName, target) {}
+// itemType is a string, target is an entity (i.e. monster, tradesman, player)
+// If target is not specified, item should be used on player for type 'potion'. For type 'bomb', item should be used on the entity at the same position (e.g. monster)
+function useItem(itemType, target) {}
 
 // Uses a player skill (note: skill is not consumable, it's useable infinitely besides the cooldown wait time)
 // skillName is a string. target is an entity (typically monster).
@@ -78,6 +74,10 @@ function initBoard(rows, columns) {}
 // Prints the board
 function printBoard() {}
 
+// This function sets the player variable to a player object based on the specifications of the README file
+// Prints a message showing player name and level (which will be 1 by default)
+function createPlayer(name, level = 1, items = []) {}
+
 // Creates a monster object with a random name with the specified level, items and position
 // The entity properties (e.g. hp, attack, speed) must respect the rules defined in the README
 function createMonster(level, items, position) {}
@@ -97,7 +97,8 @@ function move(direction) {}
 
 function setupPlayer() {
   printSectionTitle('SETUP PLAYER');
-  print("Please enter your name using the setName function. Usage: setName('Bob')");
+  print("Please create a player using the createPlayer function. Usage: createPlayer('Bob')");
+  print("You can optionally pass in a level and items, e.g. createPlayer('Bob', 3, [items[0], items[2]]).");
   print("Once you're done, go to the next step with next()");
 }
 
