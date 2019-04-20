@@ -26,12 +26,12 @@ Setup player is functional
 Setup board is functional
 
 - initBoard
-- createBoard
-  - Creates the board with specified number of rows and columns
-  - First and last row & first and last column are wall entities
-  - The rest is grass entities
-- placePlayer
-  - Places player object in the middle of the board
+  - createBoard
+    - Creates the board with specified number of rows and columns
+    - First and last row & first and last column are wall entities
+    - The rest is grass entities
+  - placePlayer
+    - Places player object in the middle of the board
 - printBoard
 - create functions
   - Creates the entities with correct properties (based on README) and values specified in parameters
