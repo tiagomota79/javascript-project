@@ -8,7 +8,9 @@ The adventurer can move in 4 directions (Up, Down, Left, Right) and interact wit
 
 Be sure to check the images for more information on the different features of the game
 
-# Grading criterias
+# Grading rubrics
+
+Each of the following grading rubric will be evaluated (PASS or FAIL)
 
 Setup player is functional
 
@@ -46,10 +48,15 @@ Game core features
 - move
   - Player can move in the 4 directions specified
   - Player cannot move past walls
-  - When player moves, the entity that was there (e.g.) grass shows up again
+  - When player moves, the entity that was there (e.g. grass) shows up again
   - If player encounters an entity (monster, item, tradesman, dungeon) a message appears to print which entity was encountered (e.g. 'Found the tradesman!')
 - Player can pickup an item
-  - When an item is picked up, a grass entity can be created to take its place
+  - When an item is picked up, a grass entity replaces it
+- Player can win the game
+  - Move to unlocked dungeon with princess triggers printSectionTitle with 'GAME OVER' message
+
+Game battle feature
+
 - Player can fight monsters
   - Encountering a monster triggers 2 setInterval
     - Player attack: setInterval using the speed property of the player as the interval time, damages the enemy by the value of the player's attack property
@@ -57,11 +64,10 @@ Game core features
   - Player or monster can die if hp reaches 0
     - HP cannot go under 0
     - triggers printSectionTitle with 'GAME OVER' message if player dies
+    - replace monster with grass entity if defeated
   - Player gains exp points for defeating monsters
     - Player can level up if enough exp is earned.
   - Player can obtain monster items when defeated
-- Player can win the game
-  - Move to unlocked dungeon with princess triggers printSectionTitle with 'GAME OVER' message
 
 Game additional features
 
