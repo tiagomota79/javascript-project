@@ -22,11 +22,104 @@ const monsterNames = [
 ];
 
 const RARITY_LIST = ['Common', 'Unusual', 'Rare', 'Epic'];
-const items = []; // Array of item objects. These will be used to clone new items with the appropriate properties.
+const items = [
+  {
+    name: 'Common bomb',
+    type: 'bomb',
+    value: 7,
+    rarity: 0,
+    use: '** function',
+  },
+  {
+    name: 'Unusual bomb',
+    type: 'bomb',
+    value: 14,
+    rarity: 1,
+    use: '** function',
+  },
+  {
+    name: 'Rare bomb',
+    type: 'bomb',
+    value: 28,
+    rarity: 2,
+    use: '** function',
+  },
+  {
+    name: 'Rare bomb',
+    type: 'bomb',
+    value: 56,
+    rarity: 3,
+    use: '** function',
+  },
+  {
+    name: 'Common potion',
+    type: 'potion',
+    value: 5,
+    rarity: 0,
+    use: '** function',
+  },
+  {
+    name: 'Unusual potion',
+    type: 'potion',
+    value: 10,
+    rarity: 1,
+    use: '** function',
+  },
+  {
+    name: 'Rare potion',
+    type: 'potion',
+    value: 20,
+    rarity: 2,
+    use: '** function',
+  },
+  {
+    name: 'Rare potion',
+    type: 'potion',
+    value: 40,
+    rarity: 3,
+    use: '** function',
+  },
+  {
+    name: 'Epic key',
+    type: 'key',
+    value: 150,
+    rarity: 3,
+    use: '** function',
+  },
+]; // Array of item objects. These will be used to clone new items with the appropriate properties.
 const GAME_STEPS = ['SETUP_PLAYER', 'SETUP_BOARD', 'GAME_START'];
 let gameStep = 0; // The current game step, value is index of the GAME_STEPS array.
 let board = []; // The board holds all the game entities. It is a 2D array.
-let player = {}; // The player object
+let player = {
+  // The player object
+  name: undefined,
+  level: 1,
+  items: [],
+  skills: [
+    {
+      name: 'confuse',
+      requiredLevel: 1,
+      cooldown: 10000,
+      use: '** function',
+    },
+    {
+      name: 'steal',
+      requiredLevel: 3,
+      cooldown: 25000,
+      use: '** function',
+    },
+  ],
+  attack: 1 * this.level,
+  speed: 3000 / this.level,
+  hp: 0,
+  gold: 0,
+  xp: 0,
+  type: 'player',
+  position: {},
+  getMaxHp: '** function',
+  levelUp: '** function',
+  getExpToLevel: '** function',
+};
 
 // Utility function to print messages with different colors. Usage: print('hello', 'red');
 function print(arg, color) {
@@ -36,7 +129,9 @@ function print(arg, color) {
 
 // Prints a blue string with the indicated number of dashes on each side of the string. Usage: printSectionTitle('hi', 1) // -hi-
 // We set a default value for the count to be 20 (i.e. 20 dashes '-')
-function printSectionTitle(title, count = 20) {}
+function printSectionTitle(title, count = 20) {
+  print('-'.repeat(count) + title + '-'.repeat(count), 'blue');
+}
 
 // Returns a new object with the same keys and values as the input object
 function clone(entity) {}
@@ -83,7 +178,13 @@ function printBoard() {}
 // Sets the player variable to a player object based on the specifications of the README file
 // The items property will need to be a new array of cloned item objects
 // Prints a message showing player name and level (which will be 1 by default)
-function createPlayer(name, level = 1, items = []) {}
+function createPlayer(name, level = 1, items = []) {
+  player.name = name;
+  print(
+    'Welcome to the game ' + name + '! Your level is ' + level + '.',
+    'blue'
+  );
+}
 
 // Creates a monster object with a random name with the specified level, items and position
 // The items property will need to be a new array of cloned item objects
@@ -100,7 +201,13 @@ function createItem(item, position) {}
 
 // Creates a dungeon entity at the specified position
 // The other parameters are optional. You can have unlocked dungeons with no princess for loot, or just empty ones that use up a key for nothing.
-function createDungeon(position, isLocked = true, hasPrincess = true, items = [], gold = 0) {}
+function createDungeon(
+  position,
+  isLocked = true,
+  hasPrincess = true,
+  items = [],
+  gold = 0
+) {}
 
 // Moves the player in the specified direction
 // You will need to handle encounters with other entities e.g. fight with monster
@@ -108,7 +215,9 @@ function move(direction) {}
 
 function setupPlayer() {
   printSectionTitle('SETUP PLAYER');
-  print("Please create a player using the createPlayer function. Usage: createPlayer('Bob')");
+  print(
+    "Please create a player using the createPlayer function. Usage: createPlayer('Bob')"
+  );
   print(
     "You can optionally pass in a level and items, e.g. createPlayer('Bob', 3, [items[0], items[2]]). items[0] refers to the first item in the items variable"
   );
@@ -127,7 +236,9 @@ function setupBoard() {
 function startGame() {
   printSectionTitle('START GAME');
   print('Hello ' + player.name);
-  print("You are ready to start your adventure. Use move('U' | 'D' | 'L' | 'R') to get going.");
+  print(
+    "You are ready to start your adventure. Use move('U' | 'D' | 'L' | 'R') to get going."
+  );
   printBoard();
 }
 
