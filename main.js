@@ -23,6 +23,7 @@ const monsterNames = [
 
 const RARITY_LIST = ['Common', 'Unusual', 'Rare', 'Epic'];
 const items = [
+  // Array of item objects. These will be used to clone new items with the appropriate properties.
   {
     name: 'Common bomb',
     type: 'bomb',
@@ -86,7 +87,7 @@ const items = [
     rarity: 3,
     use: '** function',
   },
-]; // Array of item objects. These will be used to clone new items with the appropriate properties.
+];
 const GAME_STEPS = ['SETUP_PLAYER', 'SETUP_BOARD', 'GAME_START'];
 let gameStep = 0; // The current game step, value is index of the GAME_STEPS array.
 let board = []; // The board holds all the game entities. It is a 2D array.
@@ -109,7 +110,7 @@ let player = {
       use: '** function',
     },
   ],
-  attack: 1 * this.level,
+  attack: 10 * this.level,
   speed: 3000 / this.level,
   hp: 0,
   gold: 0,
@@ -151,14 +152,37 @@ function useItem(itemName, target) {}
 
 // Uses a player skill (note: skill is not consumable, it's useable infinitely besides the cooldown wait time)
 // skillName is a string. target is an entity (typically monster).
-// If target is not specified, skill shoud be used on the entity at the same position
 function useSkill(skillName, target) {}
 
 // Sets the board variable to a 2D array of rows and columns
 // First and last rows are walls
 // First and last columns are walls
 // All the other entities are grass entities
-function createBoard(rows, columns) {}
+function createBoard(rows, columns) {
+  if (rows < 8 || columns < 8) {
+    print(
+      'Your board is too small for an adventure! Rows and columns should have a length of at least 8. Please try again.',
+      'blue'
+    );
+  } else {
+    for (let i = 0; i < rows; i++) {
+      board[i] = [];
+      for (let j = 0; j < columns; j++) {
+        if (i === 0 || j === 0 || i === rows - 1 || j === columns - 1) {
+          board[i][j] = {
+            type: 'wall',
+            position: { row: i, column: j },
+          };
+        } else {
+          board[i][j] = {
+            type: 'grass',
+            position: { row: i, column: j },
+          };
+        }
+      }
+    }
+  }
+}
 
 // Updates the board by setting the entity at the entity position
 // An entity has a position property, each board cell is an object with an entity property holding a reference to the entity at that position
@@ -167,23 +191,55 @@ function updateBoard(entity) {}
 
 // Sets the position property of the player object to be in the middle of the board
 // You may need to use Math methods such as Math.floor()
-function placePlayer() {}
+function placePlayer() {
+  player.position = {
+    row: Math.floor(board.length / 2),
+    column: Math.floor(board[0].length / 2),
+  };
+}
 
 // Creates the board and places player
-function initBoard(rows, columns) {}
+function initBoard(rows, columns) {
+  createBoard(rows, columns);
+  placePlayer();
+  printBoard();
+}
 
 // Prints the board
-function printBoard() {}
+function printBoard() {
+  for (let i = 0; i < board.length; i++) {
+    let boardTile = '';
+    for (let j = 0; j < board[i].length; j++) {
+      if (i === player.position.row && j === player.position.column) {
+        boardTile += 'P';
+      } else if (board[i][j].type === 'wall') {
+        boardTile += '#';
+      } else if (board[i][j].type === 'grass') {
+        boardTile += '.';
+      }
+    }
+    print(boardTile);
+  }
+}
 
 // Sets the player variable to a player object based on the specifications of the README file
 // The items property will need to be a new array of cloned item objects
 // Prints a message showing player name and level (which will be 1 by default)
 function createPlayer(name, level = 1, items = []) {
   player.name = name;
+  player.level = level;
+  player.items = items;
   print(
     'Welcome to the game ' + name + '! Your level is ' + level + '.',
     'blue'
   );
+  if (player.items === [] || player.items === undefined) {
+    print('You currently have no items', 'blue');
+  } else {
+    for (let i = 0; i < player.items.length; i++) {
+      print('You have a ' + player.items[i].name, 'blue');
+    }
+  }
 }
 
 // Creates a monster object with a random name with the specified level, items and position
@@ -211,7 +267,41 @@ function createDungeon(
 
 // Moves the player in the specified direction
 // You will need to handle encounters with other entities e.g. fight with monster
-function move(direction) {}
+function move(direction) {
+  let newPosition;
+  switch (direction) {
+    case 'U':
+      newPosition = {
+        row: player.position.row - 1,
+        column: player.position.column,
+      };
+      break;
+    case 'R':
+      newPosition = {
+        row: player.position.row,
+        column: player.position.column + 1,
+      };
+      break;
+    case 'D':
+      newPosition = {
+        row: player.position.row + 1,
+        column: player.position.column,
+      };
+      break;
+    case 'L':
+      newPosition = {
+        row: player.position.row,
+        column: player.position.column - 1,
+      };
+      break;
+  }
+  if (board[newPosition.row][newPosition.column].type !== 'wall') {
+    player.position = newPosition;
+  } else if (board[newPosition.row][newPosition.column].type === 'wall') {
+    print('You hit a wall!', 'blue');
+  }
+  printBoard();
+}
 
 function setupPlayer() {
   printSectionTitle('SETUP PLAYER');
