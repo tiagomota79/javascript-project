@@ -91,6 +91,27 @@ const items = [
 const GAME_STEPS = ['SETUP_PLAYER', 'SETUP_BOARD', 'GAME_START'];
 let gameStep = 0; // The current game step, value is index of the GAME_STEPS array.
 let board = []; // The board holds all the game entities. It is a 2D array.
+
+function attackValue(character) {
+  // function to pass the value of the attack property to the characters.
+  if (character.type === 'player') {
+    character.attack = character.level * 10;
+  }
+  if (character.type === 'monster') {
+    character.attack = character.level * 10;
+  }
+}
+
+function speedValue(character) {
+  // function to pass the value of the speed property to the characters.
+  if (character.type === 'player') {
+    character.speed = 3000 / character.level;
+  }
+  if (character.type === 'monster') {
+    character.speed = 6000 / character.level;
+  }
+}
+
 let player = {
   // The player object
   name: undefined,
@@ -110,8 +131,8 @@ let player = {
       use: '** function',
     },
   ],
-  attack: 10 * this.level,
-  speed: 3000 / this.level,
+  attack: 0,
+  speed: 0,
   hp: 0,
   gold: 0,
   xp: 0,
@@ -229,6 +250,8 @@ function createPlayer(name, level = 1, items = []) {
   player.name = name;
   player.level = level;
   player.items = items;
+  attackValue(player);
+  speedValue(player);
   print(
     'Welcome to the game ' + name + '! Your level is ' + level + '.',
     'blue'
