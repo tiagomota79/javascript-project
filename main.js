@@ -260,7 +260,7 @@ function buy(number) {
         '!',
       'blue'
     );
-    print('You have ' + player.gold + ' gold left', 'blue');
+    print('You have ' + player.gold + ' gold left.', 'blue');
     board[player.position.row][player.position.column].items.splice(number, 1, {
       name: 'Out of stock',
       value: Infinity,
@@ -290,7 +290,7 @@ function sell(number) {
     player.items[number]
   );
   player.items.splice(number, 1);
-  print('You now have ' + player.gold + ' gold', 'blue');
+  print('You now have ' + player.gold + ' gold.', 'blue');
   print('You still have these items:', 'blue');
   for (let i = 0; i < player.items.length; i++) {
     print(player.items[i], 'blue');
@@ -459,7 +459,7 @@ function move(direction) {
         i +
           ' Item: ' +
           board[player.position.row][player.position.column].items[i].name +
-          ' Price: ' +
+          '. Price: ' +
           board[player.position.row][player.position.column].items[i].value,
         'blue'
       );
