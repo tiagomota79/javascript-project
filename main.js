@@ -124,6 +124,15 @@ function randomPosition() {
   return position;
 }
 
+let monsterNum; // Holder for the number of monsters to be automatically created, proportional to the board size.
+let itemsNum; // Holder for the number of items to be automatically created, proportional to the board size.
+
+function autoEntities() {
+  // function to automatically calculate the number of monsters, dungeons and items according to the board size.
+  monstersNum = Math.floor(board.length * board[0].length * 0.02);
+  itemsNum = Math.floor(board.length * board[0].length * 0.02);
+}
+
 let player = {
   // The player object
   name: undefined,
@@ -257,13 +266,18 @@ function buy(number) {
       value: Infinity,
     });
   } else if (
+    board[player.position.row][player.position.column].items[number].value !==
+      Infinity &&
+    player.gold <
+      board[player.position.row][player.position.column].items[number].value
+  ) {
+    print("You don't have enough gold for this item...", 'blue');
+  } else if (
     (board[player.position.row][player.position.column].items[
       number
     ].value = Infinity)
   ) {
     print('Sorry, this item is out of stock.', 'blue');
-  } else {
-    print("You don't have enough gold for this item...", 'blue');
   }
 }
 
@@ -326,6 +340,16 @@ function printBoard() {
     for (let j = 0; j < board[i].length; j++) {
       if (i === player.position.row && j === player.position.column) {
         boardTile += 'P';
+      } else if (board[i][j].type === 'tradesman') {
+        boardTile += 'T';
+      } else if (board[i][j].type === 'monster') {
+        boardTile += 'M';
+      } else if (
+        board[i][j].type === 'bomb' ||
+        board[i][j].type === 'potion' ||
+        board[i][j].type === 'key'
+      ) {
+        boardTile += 'I';
       } else if (board[i][j].type === 'wall') {
         boardTile += '#';
       } else if (board[i][j].type === 'grass') {
