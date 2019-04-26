@@ -92,24 +92,36 @@ const GAME_STEPS = ['SETUP_PLAYER', 'SETUP_BOARD', 'GAME_START'];
 let gameStep = 0; // The current game step, value is index of the GAME_STEPS array.
 let board = []; // The board holds all the game entities. It is a 2D array.
 
-function attackValue(character) {
-  // function to pass the value of the attack property to the characters.
-  if (character.type === 'player') {
-    character.attack = character.level * 10;
+function attackSpeedValue(entity) {
+  // function to pass the value of the attack and speed properties to the characters.
+  if (entity.type === 'player') {
+    entity.attack = entity.level * 10;
+    entity.speed = 3000 / entity.level;
   }
-  if (character.type === 'monster') {
-    character.attack = character.level * 10;
+  if (entity.type === 'monster') {
+    entity.attack = entity.level * 10;
+    entity.speed = 6000 / entity.level;
   }
 }
 
-function speedValue(character) {
-  // function to pass the value of the speed property to the characters.
-  if (character.type === 'player') {
-    character.speed = 3000 / character.level;
+function randomPosition() {
+  // function to randomically place monsters, dungeons, items and tradesman on the board.
+  let position;
+  while (
+    !position ||
+    (position.row === player.position.row &&
+      position.column === player.position.column)
+  ) {
+    let minRow = 1;
+    let maxRow = board.length - 2;
+    let minColumn = 1;
+    let maxColumn = board[0].length - 2;
+    position = {
+      row: Math.floor(Math.random() * (maxRow - minRow)) + minRow,
+      column: Math.floor(Math.random() * (maxColumn - minColumn)) + minColumn,
+    };
   }
-  if (character.type === 'monster') {
-    character.speed = 6000 / character.level;
-  }
+  return position;
 }
 
 let player = {
@@ -156,14 +168,30 @@ function printSectionTitle(title, count = 20) {
 }
 
 // Returns a new object with the same keys and values as the input object
-function clone(entity) {}
+function clone(entity) {
+  let clone = {};
+  for (let property in entity) {
+    if (entity.hasOwnProperty(property)) {
+      clone[property] = entity[property];
+    }
+  }
+  return clone;
+}
 
 // returns true or false to indicate whether 2 different objects have the same keys and values
 function assertEqual(obj1, obj2) {}
 
 // Clones an array of objects
 // returns a new array of cloned objects. Useful to clone an array of item objects
-function cloneArray(objs) {}
+function cloneArray(objs) {
+  let clonedArray = [];
+  for (let property in objs) {
+    if (objs.hasOwnProperty(property)) {
+      clonedArray[property] = objs[property];
+    }
+  }
+  return clonedArray;
+}
 
 // Uses a player item (note: this consumes the item, need to remove it after use)
 // itemName is a string, target is an entity (i.e. monster, tradesman, player, dungeon)
@@ -180,26 +208,19 @@ function useSkill(skillName, target) {}
 // First and last columns are walls
 // All the other entities are grass entities
 function createBoard(rows, columns) {
-  if (rows < 8 || columns < 8) {
-    print(
-      'Your board is too small for an adventure! Rows and columns should have a length of at least 8. Please try again.',
-      'blue'
-    );
-  } else {
-    for (let i = 0; i < rows; i++) {
-      board[i] = [];
-      for (let j = 0; j < columns; j++) {
-        if (i === 0 || j === 0 || i === rows - 1 || j === columns - 1) {
-          board[i][j] = {
-            type: 'wall',
-            position: { row: i, column: j },
-          };
-        } else {
-          board[i][j] = {
-            type: 'grass',
-            position: { row: i, column: j },
-          };
-        }
+  for (let i = 0; i < rows; i++) {
+    board[i] = [];
+    for (let j = 0; j < columns; j++) {
+      if (i === 0 || j === 0 || i === rows - 1 || j === columns - 1) {
+        board[i][j] = {
+          type: 'wall',
+          position: { row: i, column: j },
+        };
+      } else {
+        board[i][j] = {
+          type: 'grass',
+          position: { row: i, column: j },
+        };
       }
     }
   }
@@ -208,7 +229,59 @@ function createBoard(rows, columns) {
 // Updates the board by setting the entity at the entity position
 // An entity has a position property, each board cell is an object with an entity property holding a reference to the entity at that position
 // When a player is on a board cell, the board cell keeps the current entity property (e.g. monster entity at that position) and may need to have an additional property to know the player is there too.
-function updateBoard(entity) {}
+function updateBoard(entity) {
+  board[entity.position.row][entity.position.column] = entity;
+}
+
+//Function to buy an item from the tradesman. The bought item is pushed into the player items array and replaced on the tradesman array by an 'Out of stock' item. The value of the item is subtracted from the player's gold.
+function buy(number) {
+  if (
+    player.gold >=
+    board[player.position.row][player.position.column].items[number].value
+  ) {
+    player.gold =
+      player.gold -
+      board[player.position.row][player.position.column].items[number].value;
+    player.items.push(
+      board[player.position.row][player.position.column].items[number]
+    );
+    print(
+      'Congratulations! You now have the ' +
+        board[player.position.row][player.position.column].items[number].name +
+        '!',
+      'blue'
+    );
+    print('You have ' + player.gold + ' gold left', 'blue');
+    board[player.position.row][player.position.column].items.splice(number, 1, {
+      name: 'Out of stock',
+      value: Infinity,
+    });
+  } else if (
+    (board[player.position.row][player.position.column].items[
+      number
+    ].value = Infinity)
+  ) {
+    print('Sorry, this item is out of stock.', 'blue');
+  } else {
+    print("You don't have enough gold for this item...", 'blue');
+  }
+}
+
+//Function to sell items to the tradesman. The sold item is removed from the player's inventory and added to the tradesman's. The value of the item is added to the player's gold.
+// Do the tradesman has infinite money?
+function sell(number) {
+  print('You sold your ' + player.items[number].name, 'blue');
+  player.gold = player.gold + player.items[number].value;
+  board[player.position.row][player.position.column].items.push(
+    player.items[number]
+  );
+  player.items.splice(number, 1);
+  print('You now have ' + player.gold + ' gold', 'blue');
+  print('You still have these items:', 'blue');
+  for (let i = 0; i < player.items.length; i++) {
+    print(player.items[i], 'blue');
+  }
+}
 
 // Sets the position property of the player object to be in the middle of the board
 // You may need to use Math methods such as Math.floor()
@@ -221,8 +294,28 @@ function placePlayer() {
 
 // Creates the board and places player
 function initBoard(rows, columns) {
-  createBoard(rows, columns);
-  placePlayer();
+  if (rows < 8 || columns < 8) {
+    print(
+      'Your board is too small for an adventure! Rows and columns should have a length of at least 8. Please try again.',
+      'blue'
+    );
+  } else {
+    createBoard(rows, columns);
+    placePlayer();
+    placeOther();
+  }
+}
+
+//Function to automatically place entities to the board. Monsters and items are calculated proportionally to the board size. One tradesman and two dungeons are created - one of which has the princess. All entities are randomically placed on the board.
+function placeOther() {
+  autoEntities();
+  updateBoard(createTradesman());
+  // for (let i = 0; i < itemsNum; i++) {
+  //   updateBoard(createItem());
+  // }
+  // for (let i = 0; i < monstersNum; i++) {
+  //   updateBoard(createMonster());
+  // }
   printBoard();
 }
 
@@ -250,8 +343,7 @@ function createPlayer(name, level = 1, items = []) {
   player.name = name;
   player.level = level;
   player.items = items;
-  attackValue(player);
-  speedValue(player);
+  attackSpeedValue(player);
   print(
     'Welcome to the game ' + name + '! Your level is ' + level + '.',
     'blue'
@@ -272,7 +364,15 @@ function createMonster(level, items, position) {}
 
 // Creates a tradesman object with the specified items and position. hp is Infinity
 // The items property will need to be a new array of cloned item objects
-function createTradesman(items, position) {}
+function createTradesman() {
+  return {
+    name: 'Tradesman',
+    hp: Infinity,
+    type: 'tradesman',
+    items: cloneArray(items),
+    position: randomPosition(),
+  };
+}
 
 // Creates an item entity by cloning one of the item objects and adding the position and type properties.
 // item is a reference to one of the items in the items variable. It needs to be cloned before being assigned the position and type properties.
@@ -322,6 +422,52 @@ function move(direction) {
     player.position = newPosition;
   } else if (board[newPosition.row][newPosition.column].type === 'wall') {
     print('You hit a wall!', 'blue');
+  }
+  if (board[newPosition.row][newPosition.column].type === 'tradesman') {
+    print('Welcome to my shop, adventurer!', 'blue');
+    print('These are the items on my inventory:', 'blue');
+    for (
+      let i = 0;
+      i < board[player.position.row][player.position.column].items.length;
+      i++
+    ) {
+      print(
+        i +
+          ' Item: ' +
+          board[player.position.row][player.position.column].items[i].name +
+          ' Price: ' +
+          board[player.position.row][player.position.column].items[i].value,
+        'blue'
+      );
+    }
+    print(
+      'To buy, use buy(number). To sell, use sell(number). Number refers to the index of the item you want to buy/sell',
+      'blue'
+    );
+    print('You have ' + player.gold + ' gold', 'blue');
+  }
+  if (board[newPosition.row][newPosition.column].type === 'monster') {
+    print(
+      'You met an angry' +
+        board[newPosition.row][newPosition.column].name +
+        '!',
+      'blue'
+    );
+    battle();
+  }
+  if (
+    board[newPosition.row][newPosition.column].type === 'bomb' ||
+    board[newPosition.row][newPosition.column].type === 'potion' ||
+    board[newPosition.row][newPosition.column].type === 'key'
+  ) {
+    print(
+      'You found an item! ' + board[newPosition.row][newPosition.column].name,
+      'blue'
+    );
+    pickUpItem();
+  }
+  if (board[newPosition.row][newPosition.column].type === 'dungeon') {
+    dungeon();
   }
   printBoard();
 }
