@@ -117,8 +117,9 @@ function randomPosition() {
     let minColumn = 1;
     let maxColumn = board[0].length - 2;
     position = {
-      row: Math.floor(Math.random() * (maxRow - minRow)) + minRow,
-      column: Math.floor(Math.random() * (maxColumn - minColumn)) + minColumn,
+      row: Math.floor(Math.random() * (maxRow - minRow + 1)) + minRow,
+      column:
+        Math.floor(Math.random() * (maxColumn - minColumn + 1)) + minColumn,
     };
   }
   return position;
