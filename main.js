@@ -57,28 +57,36 @@ const items = [
     type: 'potion',
     value: 5,
     rarity: 0,
-    use: '** function',
+    use: function(target) {
+      target.hp = Math.min(player.getMaxHp(), player.hp + 25);
+    },
   },
   {
     name: 'Unusual potion',
     type: 'potion',
     value: 10,
     rarity: 1,
-    use: '** function',
+    use: function(target) {
+      target.hp = Math.min(player.getMaxHp(), player.hp + 50);
+    },
   },
   {
     name: 'Rare potion',
     type: 'potion',
     value: 20,
     rarity: 2,
-    use: '** function',
+    use: function(target) {
+      target.hp = Math.min(player.getMaxHp(), player.hp + 75);
+    },
   },
   {
-    name: 'Rare potion',
+    name: 'Epic potion',
     type: 'potion',
     value: 40,
     rarity: 3,
-    use: '** function',
+    use: function(target) {
+      target.hp = player.getMaxHp();
+    },
   },
   {
     name: 'Epic key',
@@ -130,8 +138,9 @@ let itemsNum; // Holder for the number of items to be automatically created, pro
 
 function autoEntities() {
   // function to automatically calculate the number of monsters, dungeons and items according to the board size.
-  monstersNum = Math.floor(board.length * board[0].length * 0.02);
-  itemsNum = Math.floor(board.length * board[0].length * 0.02);
+  monstersNum = Math.ceil(board.length * board[0].length * 0.025);
+  itemsNum = Math.ceil(board.length * board[0].length * 0.015);
+  dungeonsNum = Math.ceil(board.length * board[0].length * 0.015);
 }
 
 let player = {
@@ -160,7 +169,9 @@ let player = {
   xp: 0,
   type: 'player',
   position: {},
-  getMaxHp: '** function',
+  getMaxHp: function(maxHp) {
+    return player.level * 100;
+  },
   levelUp: '** function',
   getExpToLevel: '** function',
 };
@@ -207,11 +218,68 @@ function cloneArray(objs) {
 // itemName is a string, target is an entity (i.e. monster, tradesman, player, dungeon)
 // If target is not specified, item should be used on player for type 'potion'. Else, item should be used on the entity at the same position
 // First item of matching type is used
-function useItem(itemName, target) {}
+function useItem(name) {
+  let indexOfItem = player.items
+    .map(function(item) {
+      return item.name;
+    })
+    .indexOf(name);
+  if (indexOfItem === -1) {
+    print("You don't have this item in your inventory!", 'red');
+  } else if (player.items[indexOfItem].type === 'potion') {
+    player.items[indexOfItem].use(player);
+    print(
+      name + ' used succesfully! You restored your hp to ' + player.hp,
+      'blue'
+    );
+    player.items.splice(indexOfItem, 1);
+  }
+}
 
 // Uses a player skill (note: skill is not consumable, it's useable infinitely besides the cooldown wait time)
 // skillName is a string. target is an entity (typically monster).
-function useSkill(skillName, target) {}
+function useSkill(name) {
+  let indexOfSkill = player.skills
+    .map(function(skill) {
+      return skill.name;
+    })
+    .indexOf(name);
+  if (name === 'steal') {
+    if (
+      player.level >= player.skills[indexOfSkill].requiredLevel &&
+      player.skills[indexOfSkill].cooldown === 25000
+    ) {
+      for (
+        let i = 0;
+        i < board[player.position.row][player.position.column].items.length;
+        i++
+      ) {
+        if (
+          board[player.position.row][player.position.column].items[i].rarity <=
+          1
+        ) {
+          player.items.push(
+            board[player.position.row][player.position.column].items[i]
+          );
+          board[player.position.row][player.position.column].items.splice(
+            i,
+            1,
+            { name: 'Out of stock', value: Infinity }
+          );
+        }
+      }
+      print('Steal successful. You thief!', 'blue');
+      player.skills[indexOfSkill].cooldown = 0;
+      setTimeout(function() {
+        player.skills[1].cooldown = 25000;
+      }, 25000);
+    } else if (player.level < 3) {
+      print('You must be level 3 or higher to use this skill.', 'red');
+    } else if (player.skills[1].cooldown !== 25000) {
+      print('You must wait 25 seconds to steal something again!', 'red');
+    }
+  }
+}
 
 // Sets the board variable to a 2D array of rows and columns
 // First and last rows are walls
@@ -298,6 +366,45 @@ function sell(number) {
   }
 }
 
+//Function to pick up un item when the player is over it.
+function pickUpItem() {
+  player.items.push(board[player.position.row][player.position.column]);
+  board[player.position.row].splice([player.position.column], 1, {
+    type: 'grass',
+    position: player.position,
+  });
+}
+
+//Function to use the player's skills
+function useSkill(name) {
+  if (name === 'steal') {
+    if (player.level >= 3) {
+      for (
+        let i = 0;
+        i < board[player.position.row][player.position.column].items.length;
+        i++
+      ) {
+        if (
+          board[player.position.row][player.position.column].items[i].rarity <=
+          1
+        ) {
+          player.items.push(
+            board[player.position.row][player.position.column].items[i]
+          );
+          board[player.position.row][player.position.column].items.splice(
+            i,
+            1,
+            { name: 'Out of stock', value: Infinity }
+          );
+        }
+      }
+      print('Steal successful. You thief!', 'blue');
+    } else {
+      print('You must be level 3 or higher to use this skill.', 'red');
+    }
+  }
+}
+
 // Sets the position property of the player object to be in the middle of the board
 // You may need to use Math methods such as Math.floor()
 function placePlayer() {
@@ -318,6 +425,7 @@ function initBoard(rows, columns) {
     createBoard(rows, columns);
     placePlayer();
     placeOther();
+    next();
   }
 }
 
@@ -325,13 +433,10 @@ function initBoard(rows, columns) {
 function placeOther() {
   autoEntities();
   updateBoard(createTradesman());
-  // for (let i = 0; i < itemsNum; i++) {
-  //   updateBoard(createItem());
-  // }
-  // for (let i = 0; i < monstersNum; i++) {
-  //   updateBoard(createMonster());
-  // }
-  printBoard();
+  for (let i = 0; i < itemsNum; i++) {
+    updateBoard(createItem());
+  }
+  // printBoard();
 }
 
 // Prints the board
@@ -369,17 +474,36 @@ function createPlayer(name, level = 1, items = []) {
   player.level = level;
   player.items = items;
   attackSpeedValue(player);
+  player.hp = player.getMaxHp();
   print(
     'Welcome to the game ' + name + '! Your level is ' + level + '.',
-    'blue'
+    'orange'
   );
   if (player.items === [] || player.items === undefined) {
-    print('You currently have no items', 'blue');
+    print('You currently have no items', 'orange');
   } else {
     for (let i = 0; i < player.items.length; i++) {
-      print('You have a ' + player.items[i].name, 'blue');
+      print('You have a ' + player.items[i].name, 'orange');
     }
   }
+  next();
+}
+
+// Function to print player items and gold.
+function inventory() {
+  print('You have these items:', 'blue');
+  for (let i = 0; i < player.items.length; i++) {
+    print(player.items[i].name, 'blue');
+  }
+  print('You have ' + player.gold + ' gold.', 'blue');
+}
+
+//Function to print the player's status (level, hp and xp)
+function playerStatus() {
+  print('Hello ' + player.name + '!', 'blue');
+  print('You are a level ' + player.level + ' player.', 'blue');
+  print('Your Hp is ' + player.hp + '.', 'blue');
+  print('You have ' + player.xp + ' experience points.', 'blue');
 }
 
 // Creates a monster object with a random name with the specified level, items and position
@@ -401,7 +525,14 @@ function createTradesman() {
 
 // Creates an item entity by cloning one of the item objects and adding the position and type properties.
 // item is a reference to one of the items in the items variable. It needs to be cloned before being assigned the position and type properties.
-function createItem(item, position) {}
+function createItem() {
+  let min = 0;
+  let max = items.length - 1;
+  return {
+    ...clone(items[Math.floor(Math.random() * (max - min + 1)) + min]),
+    position: randomPosition(),
+  };
+}
 
 // Creates a dungeon entity at the specified position
 // The other parameters are optional. You can have unlocked dungeons with no princess for loot, or just empty ones that use up a key for nothing.
@@ -505,16 +636,14 @@ function setupPlayer() {
   print(
     "You can optionally pass in a level and items, e.g. createPlayer('Bob', 3, [items[0], items[2]]). items[0] refers to the first item in the items variable"
   );
-  print("Once you're done, go to the next step with next()");
 }
 
 function setupBoard() {
   printSectionTitle('SETUP BOARD');
   print('Please create a board using initBoard(rows, columns)');
   print(
-    'Setup monsters, items and more using createMonster(attr), createItem(item, pos), createTradesman(items, pos), createDungeon(pos), updateBoard(entity)'
+    'Monsters, items, dungeons and the tradesman will be automatically created for you, according to the board size you chose.'
   );
-  print("Once you're done, go to the next step with next()");
 }
 
 function startGame() {
@@ -522,6 +651,9 @@ function startGame() {
   print('Hello ' + player.name);
   print(
     "You are ready to start your adventure. Use move('U' | 'D' | 'L' | 'R') to get going."
+  );
+  print(
+    'At any point in the game you can call inventory() to see your items and gold, and playerStatus() to see your level, hp and experience points.'
   );
   printBoard();
 }
@@ -549,7 +681,7 @@ function run() {
   }
 }
 
-print('Welcome to the game!', 'gold');
+print('Welcome to the game!', 'goldenRod');
 print('Follow the instructions to setup your game and start playing');
 
 run();
