@@ -186,7 +186,11 @@ let player = {
   },
   levelUp: function() {
     if (player.xp >= player.getExpToLevel()) {
-      player.level = player.level + 1;
+      player.level += 1;
+      print(
+        'You leveled up! You are now a level ' + player.level + ' character!',
+        'blue'
+      );
       attackSpeedValue();
     }
   },
