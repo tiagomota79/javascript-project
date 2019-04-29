@@ -114,7 +114,7 @@ function attackSpeedValue() {
 }
 
 function randomPosition() {
-  // function to randomically place monsters, dungeons, items and tradesman on the board.
+  // function to create a random position object.
   let position;
   while (
     !position ||
@@ -334,6 +334,69 @@ function useSkill(name) {
         'You must wait ' +
           (25 - player.skills[indexOfSkill].cooldown / 1000) +
           ' seconds to steal something again!',
+        'red'
+      );
+    }
+  } else if (name === 'confuse') {
+    if (
+      player.level >= player.skills[indexOfSkill].requiredLevel &&
+      player.skills[indexOfSkill].cooldown === 10000
+    ) {
+      let split = board[player.position.row][player.position.column].name.split(
+        ''
+      );
+      let reversedNameArr = [];
+      let reversedName;
+      for (
+        let i =
+          board[player.position.row][player.position.column].name.length - 1;
+        i >= 0;
+        i--
+      ) {
+        reversedNameArr.push(split[i]);
+      }
+      reversedName = reversedNameArr.join('');
+      print(
+        'Confusing ' +
+          board[player.position.row][player.position.column].name +
+          '...',
+        'blue'
+      );
+      print(
+        reversedName + ' is confused and hurts itself in the process!',
+        'blue'
+      );
+      board[player.position.row][player.position.column].name = reversedName;
+      board[player.position.row][player.position.column].hp = Math.max(
+        board[player.position.row][player.position.column].hp -
+          25 * player.level,
+        0
+      );
+      print(
+        board[player.position.row][player.position.column].name +
+          ' hit! -' +
+          25 * player.level +
+          'HP',
+        'purple'
+      );
+      print(
+        'HP left: ' + board[player.position.row][player.position.column].hp,
+        'purple'
+      );
+      player.skills[indexOfSkill].cooldown = 0;
+      let cooldownID = setInterval(cooldown, 1000);
+      function cooldown() {
+        if (player.skills[indexOfSkill].cooldown === 10000) {
+          clearInterval(cooldownID);
+        } else {
+          player.skills[indexOfSkill].cooldown += 1000;
+        }
+      }
+    } else if (player.skills[indexOfSkill].cooldown !== 10000) {
+      print(
+        'You must wait ' +
+          (10 - player.skills[indexOfSkill].cooldown / 1000) +
+          ' seconds to use Confuse again!',
         'red'
       );
     }
@@ -957,7 +1020,7 @@ print(
   'red'
 );
 print(
-  "2- The initBoard function will automatically generate items, monsters, dungeons and tradesman, proportionally to the board size, place them randomically on the board, and jump to START GAME. It's still possible to create entities manyally by calling updateBoard(createEntityFunction()) - createEntityFunction should be replaced by createMonster, createItem, createTradesman or createDungeon1 - but no arguments can be passed - items and position will always be automatically and randomically set.",
+  "2- The initBoard function will automatically generate items, monsters, dungeons and tradesman, proportionally to the board size, place them randomically on the board, and jump to START GAME. It's still possible to create entities manually by calling updateBoard(createEntityFunction()) - createEntityFunction should be replaced by createMonster, createItem, createTradesman or createDungeon1 - but no arguments can be passed - items and position will always be automatically and randomically set.",
   'red'
 );
 print(
@@ -972,6 +1035,7 @@ print(
   '4- One dungeon will always be locked and contain the princess. The other dungeon will be unlocked and contain one Rare bomb, one Rare potion and 150 and gold.',
   'red'
 );
+print('-'.repeat(90), 'red');
 print('-'.repeat(90), 'red');
 print('Welcome to the game!', 'goldenRod');
 print('Follow the instructions to setup your game and start playing');
