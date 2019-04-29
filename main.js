@@ -625,7 +625,7 @@ function playerStatus() {
 // The entity properties (e.g. hp, attack, speed) must respect the rules defined in the README
 function createMonster() {
   let min = 0;
-  let max = items.length - 1;
+  let max = items.length - 2;
   let monsterItems = [];
   for (let i = 0; i <= 2; i++) {
     monsterItems.push(
@@ -668,7 +668,7 @@ function createTradesman() {
 // item is a reference to one of the items in the items variable. It needs to be cloned before being assigned the position and type properties.
 function createItem() {
   let min = 0;
-  let max = items.length - 1;
+  let max = items.length - 2;
   return {
     ...clone(items[Math.floor(Math.random() * (max - min + 1)) + min]),
     position: randomPosition(),
