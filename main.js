@@ -759,7 +759,7 @@ function dungeon() {
     }
     board[player.position.row][player.position.column].items = [];
     print(
-      board[player.position.row][player.position.column].gold + 'gold',
+      board[player.position.row][player.position.column].gold + ' gold',
       'blue'
     );
     player.gold =
