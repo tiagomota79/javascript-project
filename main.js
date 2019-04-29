@@ -30,7 +30,7 @@ const items = [
     value: 7,
     rarity: 0,
     use: function(target) {
-      target.hp -= 25;
+      target.hp = Math.max(target.hp -= 25, 0);
     },
   },
   {
@@ -39,7 +39,7 @@ const items = [
     value: 14,
     rarity: 1,
     use: function(target) {
-      target.hp -= 50;
+      target.hp = Math.max(target.hp -= 50, 0);
     },
   },
   {
@@ -48,7 +48,7 @@ const items = [
     value: 28,
     rarity: 2,
     use: function(target) {
-      target.hp -= 75;
+      target.hp = Math.max(target.hp -= 75, 0);
     },
   },
   {
@@ -108,7 +108,7 @@ let gameStep = 0; // The current game step, value is index of the GAME_STEPS arr
 let board = []; // The board holds all the game entities. It is a 2D array.
 
 function attackSpeedValue() {
-  // function to pass the value of the attack and speed properties to the characters.
+  // function to pass the value of the attack and speed properties to the player.
   player.attack = player.level * 10;
   player.speed = 3000 / player.level;
 }
@@ -132,6 +132,10 @@ function randomPosition() {
     };
   }
   return position;
+}
+
+function getPlayerPosition() {
+  return board[player.position.row][player.position.column];
 }
 
 let monsterNum; // Holder for the number of monsters to be automatically created, proportional to the board size.
@@ -187,11 +191,23 @@ let player = {
   levelUp: function() {
     if (player.xp >= player.getExpToLevel()) {
       player.level += 1;
-      print(
-        'You leveled up! You are now a level ' + player.level + ' character!',
-        'blue'
-      );
+      print('You leveled up! You are now a level ' + player.level + ' character!', 'blue');
       attackSpeedValue();
+      for (let i = 0; i < board.length; i++) {
+        for (let l = 0; l < board[i].length; l++) {
+          if (board[i][l].type === 'monster') {
+            board[i][l].level = player.level;
+          }
+        }
+      }
+      for (let i = 0; i < board.length; i++) {
+        for (let l = 0; l < board[i].length; l++) {
+          if (board[i][l].type === 'keyMonster') {
+            board[i][l].level += 1;
+          }
+        }
+      }
+      updateAttackSpeed();
     }
   },
   getExpToLevel: function() {
@@ -271,17 +287,28 @@ function useItem(name) {
     );
     player.items.splice(indexOfItem, 1);
   } else if (player.items[indexOfItem].type === 'bomb') {
-    player.items[indexOfItem].use(
-      board[player.position.row][player.position.column]
-    );
-    print(
+    if (getPlayerPosition().type === 'monster') {
+      player.items[indexOfItem].use(
+      getPlayerPosition()
+      );
+      print(
       name +
         ' used successfully! ' +
-        board[player.position.row][player.position.column].name +
+        getPlayerPosition().name +
         ' hp is now ' +
-        board[player.position.row][player.position.column].hp,
+        getPlayerPosition().hp,
       'blue'
-    );
+      );
+    } else if (getPlayerPosition().type === 'grass') {
+      player.items[indexOfItem].use(player);
+      print('Oh no! You used a bomb on yourself!', 'red');
+      print('You HP is now ' + player.hp + '.', 'red');
+      player.items.splice(indexOfItem, 1);
+    } else if (getPlayerPosition().type === 'dungeon') {
+      print('Bombs are innefective on dungeons.', 'blue');
+    } else if (getPlayerPosition().type === 'tradesman') {
+      print('Please don\'t hurt the nice tradesman.', 'blue');
+    } 
   }
 }
 
@@ -300,17 +327,17 @@ function useSkill(name) {
     ) {
       for (
         let i = 0;
-        i < board[player.position.row][player.position.column].items.length;
+        i < getPlayerPosition().items.length;
         i++
       ) {
         if (
-          board[player.position.row][player.position.column].items[i].rarity <=
+          getPlayerPosition().items[i].rarity <=
           1
         ) {
           player.items.push(
-            board[player.position.row][player.position.column].items[i]
+            getPlayerPosition().items[i]
           );
-          board[player.position.row][player.position.column].items.splice(
+          getPlayerPosition().items.splice(
             i,
             1,
             { name: 'Out of stock', value: Infinity }
@@ -342,47 +369,19 @@ function useSkill(name) {
       player.level >= player.skills[indexOfSkill].requiredLevel &&
       player.skills[indexOfSkill].cooldown === 10000
     ) {
-      let split = board[player.position.row][player.position.column].name.split(
-        ''
-      );
+      let split = getPlayerPosition().name.split('');
       let reversedNameArr = [];
       let reversedName;
-      for (
-        let i =
-          board[player.position.row][player.position.column].name.length - 1;
-        i >= 0;
-        i--
-      ) {
-        reversedNameArr.push(split[i]);
+      for ( let i = getPlayerPosition().name.length - 1; i >= 0; i--) {
+      reversedNameArr.push(split[i]);
       }
       reversedName = reversedNameArr.join('');
-      print(
-        'Confusing ' +
-          board[player.position.row][player.position.column].name +
-          '...',
-        'blue'
-      );
-      print(
-        reversedName + ' is confused and hurts itself in the process!',
-        'blue'
-      );
-      board[player.position.row][player.position.column].name = reversedName;
-      board[player.position.row][player.position.column].hp = Math.max(
-        board[player.position.row][player.position.column].hp -
-          25 * player.level,
-        0
-      );
-      print(
-        board[player.position.row][player.position.column].name +
-          ' hit! -' +
-          25 * player.level +
-          'HP',
-        'purple'
-      );
-      print(
-        'HP left: ' + board[player.position.row][player.position.column].hp,
-        'purple'
-      );
+      print('Confusing ' + getPlayerPosition().name + '...', 'blue');
+      print(reversedName + ' is confused and hurts itself in the process!', 'blue');
+      getPlayerPosition().name = reversedName;
+      getPlayerPosition().hp = Math.max((getPlayerPosition().hp - (25 * player.level)), 0);
+      print(getPlayerPosition().name + ' hit! -' + 25 * player.level + 'HP', 'purple');
+      print('HP left: ' + getPlayerPosition().hp, 'purple');
       player.skills[indexOfSkill].cooldown = 0;
       let cooldownID = setInterval(cooldown, 1000);
       function cooldown() {
@@ -393,12 +392,7 @@ function useSkill(name) {
         }
       }
     } else if (player.skills[indexOfSkill].cooldown !== 10000) {
-      print(
-        'You must wait ' +
-          (10 - player.skills[indexOfSkill].cooldown / 1000) +
-          ' seconds to use Confuse again!',
-        'red'
-      );
+      print('You must wait ' + (10 - player.skills[indexOfSkill].cooldown / 1000) + ' seconds to use Confuse again!', 'red');
     }
   }
 }
@@ -437,34 +431,34 @@ function updateBoard(entity) {
 function buy(number) {
   if (
     player.gold >=
-    board[player.position.row][player.position.column].items[number].value
+    getPlayerPosition().items[number].value
   ) {
     player.gold =
       player.gold -
-      board[player.position.row][player.position.column].items[number].value;
+      getPlayerPosition().items[number].value;
     player.items.push(
-      board[player.position.row][player.position.column].items[number]
+      getPlayerPosition().items[number]
     );
     print(
       'Congratulations! You now have the ' +
-        board[player.position.row][player.position.column].items[number].name +
+        getPlayerPosition().items[number].name +
         '!',
       'blue'
     );
     print('You have ' + player.gold + ' gold left.', 'blue');
-    board[player.position.row][player.position.column].items.splice(number, 1, {
+    getPlayerPosition().items.splice(number, 1, {
       name: 'Out of stock',
       value: Infinity,
     });
   } else if (
-    board[player.position.row][player.position.column].items[number].value !==
+    getPlayerPosition().items[number].value !==
       Infinity &&
     player.gold <
-      board[player.position.row][player.position.column].items[number].value
+      getPlayerPosition().items[number].value
   ) {
     print("You don't have enough gold for this item...", 'blue');
   } else if (
-    (board[player.position.row][player.position.column].items[
+    (getPlayerPosition().items[
       number
     ].value = Infinity)
   ) {
@@ -477,7 +471,7 @@ function buy(number) {
 function sell(number) {
   print('You sold your ' + player.items[number].name, 'blue');
   player.gold = player.gold + player.items[number].value;
-  board[player.position.row][player.position.column].items.push(
+  getPlayerPosition().items.push(
     player.items[number]
   );
   player.items.splice(number, 1);
@@ -490,7 +484,7 @@ function sell(number) {
 
 //Function to pick up un item when the player is over it.
 function pickUpItem() {
-  player.items.push(board[player.position.row][player.position.column]);
+  player.items.push(getPlayerPosition());
   board[player.position.row].splice([player.position.column], 1, {
     type: 'grass',
     position: player.position,
@@ -524,9 +518,9 @@ function placeOther() {
 
 // Creates the board and places player
 function initBoard(rows, columns) {
-  if (rows < 8 || columns < 8) {
+  if (rows < 10 || columns < 10) {
     print(
-      'Your board is too small for an adventure! Rows and columns should have a length of at least 8. Please try again.',
+      'Your board is too small for an adventure! Rows and columns should have a length of at least 10. Please try again.',
       'blue'
     );
   } else {
@@ -541,7 +535,7 @@ function initBoard(rows, columns) {
 function updateAttackSpeed() {
   for (let i = 0; i < board.length; i++) {
     for (let l = 0; l < board[i].length; l++) {
-      if (board[i][l].type === 'monster') {
+      if (board[i][l].type === 'monster' || board[i][l].type === 'keyMonster') {
         board[i][l].hp = board[i][l].level * 100;
         board[i][l].attack = board[i][l].level * 10;
         board[i][l].speed = 6000 / board[i][l].level;
@@ -560,7 +554,7 @@ function printBoard() {
         boardTile += 'P';
       } else if (board[i][j].type === 'tradesman') {
         boardTile += 'T';
-      } else if (board[i][j].type === 'monster') {
+      } else if (board[i][j].type === 'monster' || board[i][j].type === 'keyMonster') {
         boardTile += 'M';
       } else if (
         board[i][j].type === 'bomb' ||
@@ -641,12 +635,12 @@ function createMonster() {
   };
 }
 
-//Function to create the monster which holds the key. It's the only monster with defined items - the key and an Epic potion - and level, 3. The name and position are still randomically generated.
+//Function to create the monster which holds the key. It's the only monster with defined items - the key and an Epic potion - and level, 2 points over player level. The name and position are still randomically generated.
 function createKeyMonster() {
   return {
     name: monsterNames[Math.floor(Math.random() * monsterNames.length)],
-    type: 'monster',
-    level: 3,
+    type: 'keyMonster',
+    level: player.level + 2,
     items: [items[6], items[8]],
     position: randomPosition(),
   };
@@ -713,22 +707,26 @@ function dungeon() {
     }
   }
   if (
-    board[player.position.row][player.position.column].isLocked === true &&
+    getPlayerPosition().isLocked === true &&
     playerHasKey === true
   ) {
     print('You unlocked the dungeon!', 'blue');
+    getPlayerPosition().isLocked = false
+    let indexOfKey = player.items.map(function(item) { return item.name; }).indexOf('Epic key');
+    player.items.splice(indexOfKey, 1);
     if (
-      (board[player.position.row][player.position.column].hasPrincess = true)
+      (getPlayerPosition().hasPrincess = true)
     ) {
       print('The Princess was inside!', 'blue');
       print(
         'Congatulations, you freed the princess and completed your quest!',
         'blue'
       );
+      getPlayerPosition().hasPrincess = false;
       gameOver();
     }
   } else if (
-    board[player.position.row][player.position.column].isLocked === true &&
+    getPlayerPosition().isLocked === true &&
     playerHasKey === false
   ) {
     print(
@@ -736,8 +734,8 @@ function dungeon() {
       'blue'
     );
   } else if (
-    board[player.position.row][player.position.column].isLocked === false &&
-    board[player.position.row][player.position.column].gold !== 0
+    getPlayerPosition().isLocked === false &&
+    getPlayerPosition().gold !== 0
   ) {
     print(
       "This dungeon doesn't have the princess, but you found a loot inside!",
@@ -746,28 +744,28 @@ function dungeon() {
     print('Here are the items added to your inventory:', 'blue');
     for (
       let i = 0;
-      i < board[player.position.row][player.position.column].items.length;
+      i < getPlayerPosition().items.length;
       i++
     ) {
       print(
-        board[player.position.row][player.position.column].items[i].name,
+        getPlayerPosition().items[i].name,
         'blue'
       );
       player.items.push(
-        board[player.position.row][player.position.column].items[i]
+        getPlayerPosition().items[i]
       );
     }
-    board[player.position.row][player.position.column].items = [];
+    getPlayerPosition().items = [];
     print(
-      board[player.position.row][player.position.column].gold + ' gold',
+      getPlayerPosition().gold + ' gold',
       'blue'
     );
     player.gold =
-      player.gold + board[player.position.row][player.position.column].gold;
-    board[player.position.row][player.position.column].gold = 0;
+      player.gold + getPlayerPosition().gold;
+    getPlayerPosition().gold = 0;
   } else if (
-    board[player.position.row][player.position.column].isLocked === false &&
-    board[player.position.row][player.position.column].gold === 0
+    getPlayerPosition().isLocked === false &&
+    getPlayerPosition().gold === 0
   ) {
     print('This dungeon is empty. Nothing to see here.', 'blue');
   }
@@ -813,15 +811,15 @@ function move(direction) {
     print('These are the items on my inventory:', 'blue');
     for (
       let i = 0;
-      i < board[player.position.row][player.position.column].items.length;
+      i < getPlayerPosition().items.length;
       i++
     ) {
       print(
         i +
           ' Item: ' +
-          board[player.position.row][player.position.column].items[i].name +
+          getPlayerPosition().items[i].name +
           '. Price: ' +
-          board[player.position.row][player.position.column].items[i].value,
+          getPlayerPosition().items[i].value,
         'blue'
       );
     }
@@ -860,94 +858,38 @@ function move(direction) {
 // Function to handle battles between the player and monsters.
 function battle() {
   let playerAttackID = setInterval(playerAttack, player.speed);
-  let monsterAttackID = setInterval(
-    monsterAttack,
-    board[player.position.row][player.position.column].speed
-  );
+  let monsterAttackID = setInterval(monsterAttack, getPlayerPosition().speed);
   function playerAttack() {
-    if (
-      player.hp === 0 &&
-      board[player.position.row][player.position.column].hp > 0
-    ) {
+    if (player.hp === 0 && getPlayerPosition().hp > 0) {
       clearInterval(playerAttackID);
       clearInterval(monsterAttackID);
-      print('You died!', 'red');
+      print('You fought bravely, but perished at the hands of the ' + getPlayerPosition().name + '!', 'red');
       gameOver();
-    } else if (
-      board[player.position.row][player.position.column].type === 'monster'
-    ) {
-      print(
-        board[player.position.row][player.position.column].name +
-          ' hit! -' +
-          player.attack +
-          'HP',
-        'purple'
-      );
-      board[player.position.row][player.position.column].hp = Math.max(
-        (board[player.position.row][player.position.column].hp -=
-          player.attack),
-        0
-      );
-      print(
-        'HP left: ' + board[player.position.row][player.position.column].hp,
-        'purple'
-      );
+    } else  if (getPlayerPosition().type === 'monster') {
+      print(getPlayerPosition().name + ' hit! -' + player.attack + 'HP', 'purple');
+      getPlayerPosition().hp = Math.max(getPlayerPosition().hp -= player.attack, 0);
+      print('HP left: ' + getPlayerPosition().hp, 'purple');
     } else {
       clearInterval(playerAttackID);
       clearInterval(monsterAttackID);
     }
   }
   function monsterAttack() {
-    if (
-      board[player.position.row][player.position.column].hp === 0 &&
-      player.hp > 0
-    ) {
+    if (getPlayerPosition().hp === 0 && player.hp > 0) {
       clearInterval(monsterAttackID);
       clearInterval(playerAttackID);
-      print(
-        'You beat the ' +
-          board[player.position.row][player.position.column].name +
-          '!',
-        'blue'
-      );
-      print(
-        'Congratulations! You received 10xp and the following items:',
-        'blue'
-      );
-      for (
-        let i = 0;
-        i < board[player.position.row][player.position.column].items.length;
-        i++
-      ) {
-        print(
-          board[player.position.row][player.position.column].items[i].name,
-          'blue'
-        );
-        player.items.push(
-          board[player.position.row][player.position.column].items[i]
-        );
+      print('You beat the ' + getPlayerPosition().name + '!', 'blue');
+      print('Congratulations! You received 10xp and the following items:', 'blue');
+      for ( let i = 0; i < getPlayerPosition().items.length; i++) {
+        print(getPlayerPosition().items[i].name, 'blue');
+        player.items.push(getPlayerPosition().items[i]);
       }
-      board[player.position.row].splice([player.position.column], 1, {
-        type: 'grass',
-        position: player.position,
-      });
+      board[player.position.row].splice([player.position.column], 1, {type: 'grass', position: player.position});
       player.xp += 10;
       player.levelUp();
-    } else if (
-      board[player.position.row][player.position.column].type === 'monster'
-    ) {
-      print(
-        player.name +
-          ' hit! -' +
-          board[player.position.row][player.position.column].attack +
-          'HP',
-        'red'
-      );
-      player.hp = Math.max(
-        (player.hp -=
-          board[player.position.row][player.position.column].attack),
-        0
-      );
+    } else if (getPlayerPosition().type === 'monster') {
+      print(player.name + ' hit! -' + getPlayerPosition().attack + 'HP', 'red');
+      player.hp = Math.max(player.hp -= getPlayerPosition().attack, 0);
       print('HP left: ' + player.hp, 'red');
     } else {
       clearInterval(playerAttackID);
@@ -983,6 +925,9 @@ function startGame() {
   print(
     'At any point in the game you can call inventory() to see your items and gold, and playerStatus() to see your level, hp and experience points.'
   );
+  print(
+    'You have two skills: steal and confuse. To use them, call the function useSkill(\'name of skill\').'
+  );
   printBoard();
 }
 
@@ -1011,32 +956,25 @@ function run() {
   }
 }
 
-print(
-  'Hello, Jordan! In order to make the game easier to start playing, I made several changes in your proposed structure. Here they are, to guide your grading:',
-  'red'
-);
-print(
-  "1- The createPlayer function works as you intended: the user passes name, level and items. If the player don't pass level, it sets to 1. There's no need to use the next() function, the user will see the SETUP BOARD right after creating the player. The next() function can be called manually anyway.",
-  'red'
-);
-print(
-  "2- The initBoard function will automatically generate items, monsters, dungeons and tradesman, proportionally to the board size, place them randomically on the board, and jump to START GAME. It's still possible to create entities manually by calling updateBoard(createEntityFunction()) - createEntityFunction should be replaced by createMonster, createItem, createTradesman or createDungeon1 - but no arguments can be passed - items and position will always be automatically and randomically set.",
-  'red'
-);
-print(
-  '2.1- The user can choose the board size, but it must be over 8 rows and columns.',
-  'red'
-);
-print(
-  '3- No item generated on the board will be the Epic key. One monster will always hold the Epic key and have a level 3. Other monsters will carry three random items and have the same level of the player.',
-  'red'
-);
-print(
-  '4- One dungeon will always be locked and contain the princess. The other dungeon will be unlocked and contain one Rare bomb, one Rare potion and 150 and gold.',
-  'red'
-);
+print('Hello, Jordan! In order to make the game easier to start playing, and more interesting all over, I made several changes in your proposed structure. Here they are, to guide your grading:', 'red');
+print(' ');
+print('1- AUTOMATIC NEXT: The createPlayer function works as you intended: the user passes name, level and items. If the player don\'t pass level, it sets to 1. There\'s no need to use the next() function, the user will see the SETUP BOARD right after creating the player. The next() function can be called manually anyway.', 'red');
+print(' ');
+print('2- AUTOMATIC RANDOM ENTITIES: The initBoard function will automatically generate items, monsters, dungeons and tradesman, proportionally to the board size, place them randomically on the board, and jump to START GAME. It\'s still possible to create entities manually by calling updateBoard(createEntityFunction()) - createEntityFunction should be replaced by createMonster, createItem, createTradesman or createDungeon1 - but no arguments can be passed - items and position will always be automatically and randomically set.', 'red');
+print(' ');
+print('2.1- MINIMUM BOARD SIZE: The user can choose the board size, but it must be over 10 rows and columns.', 'red');
+print(' ');
+print('3- KEY MONSTER: No item generated on the board will be the Epic key. One monster will always hold the Epic key and have a level 2 points over the player. Other monsters will carry three random items - but never the key - and have the same level of the player when the game starts.', 'red');
+print(' ');
+print('3.1- MONSTERS LEVEL-UP: All monsters but the key monster are created with the same level as the player. All monsters level up with the player, including the key monster - which is always two levels above the player.', 'red');
+print(' ');
+print('4- TWO DUNGEONS: One dungeon will always be locked and contain the princess. The other dungeon will be unlocked and contain one Rare bomb, one Rare potion and 150 and gold.', 'red');
+print(' ');
+print('5- ITEMS USE: Potions will always take effect on the player. Bombs will always assume the use is on the entity at the player position; if the player is over grass, the bomb will affect the player. If the player tried to use a bomb on a dungeon or the tradesman, a message will be shown alerting the player the bomb can\'t be used in this context, but the bomb won\'t be consumed. So, the useItem function doesn\'t require a target as argument, only the name of the item.', 'red');
+print(' ');
 print('-'.repeat(90), 'red');
 print('-'.repeat(90), 'red');
+print(' ');
 print('Welcome to the game!', 'goldenRod');
 print('Follow the instructions to setup your game and start playing');
 
