@@ -290,16 +290,13 @@ function useItem(name) {
     );
     player.items.splice(indexOfItem, 1);
   } else if (player.items[indexOfItem].type === 'bomb') {
-    if (
-      playerPosition().type === 'monster' ||
-      playerPosition().type === 'keyMonster'
-    ) {
+    if (playerPosition().type === 'monster' || playerPosition().type === 'keyMonster') {
       player.items[indexOfItem].use(playerPosition());
       print(
         name +
           ' used successfully! ' +
           playerPosition().name +
-          ' hp is now ' +
+          ' HP is now ' +
           playerPosition().hp,
         'blue'
       );
@@ -615,7 +612,7 @@ function inventory() {
 function playerStatus() {
   print('Hello ' + player.name + '!', 'blue');
   print('You are a level ' + player.level + ' player.', 'blue');
-  print('Your Hp is ' + player.hp + '.', 'blue');
+  print('Your HP is ' + player.hp + '.', 'blue');
   print('You have ' + player.xp + ' experience points.', 'blue');
 }
 
@@ -723,7 +720,7 @@ function dungeon() {
     if ((playerPosition().hasPrincess = true)) {
       print('The Princess was inside!', 'blue');
       print(
-        'Congatulations, you freed the princess and completed your quest!',
+        'Congratulations, you freed the princess and completed your quest!',
         'blue'
       );
       playerPosition().hasPrincess = false;
@@ -731,7 +728,7 @@ function dungeon() {
     }
   } else if (playerPosition().isLocked === true && playerHasKey === false) {
     print(
-      'The dungeon is locked! You need the key to open it. Some say a monster has the key. You can also buy one from the Tradesman, but keys are expensive!',
+      'The dungeon is locked! You need the key to open it. Legend has it a monster has the key. You can also buy one from the Tradesman, but keys are expensive!',
       'blue'
     );
   } else if (
@@ -927,7 +924,7 @@ function startGame() {
     "You are ready to start your adventure. Use move('U' | 'D' | 'L' | 'R') to get going."
   );
   print(
-    'At any point in the game you can call inventory() to see your items and gold, and playerStatus() to see your level, hp and experience points.'
+    'At any point in the game you can call inventory() to see your items and gold, and playerStatus() to see your level, HP and experience points.'
   );
   print(
     "You have two skills: steal and confuse. To use them, call the function useSkill('name of skill')."
