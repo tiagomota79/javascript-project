@@ -290,7 +290,10 @@ function useItem(name) {
     );
     player.items.splice(indexOfItem, 1);
   } else if (player.items[indexOfItem].type === 'bomb') {
-    if (playerPosition().type === 'monster' || playerPosition().type === 'keyMonster') {
+    if (
+      playerPosition().type === 'monster' ||
+      playerPosition().type === 'keyMonster'
+    ) {
       player.items[indexOfItem].use(playerPosition());
       print(
         name +
@@ -333,7 +336,9 @@ function useSkill(name) {
   if (name === 'steal') {
     if (
       player.level >= player.skills[indexOfSkill].requiredLevel &&
-      player.skills[indexOfSkill].cooldown === 25000 && playerPosition().type !== 'grass' && playerPosition().type !== 'dungeon'
+      player.skills[indexOfSkill].cooldown === 25000 &&
+      playerPosition().type !== 'grass' &&
+      playerPosition().type !== 'dungeon'
     ) {
       for (let i = 0; i < playerPosition().items.length; i++) {
         if (playerPosition().items[i].rarity <= 1) {
@@ -368,13 +373,17 @@ function useSkill(name) {
           ' seconds to steal something again!',
         'red'
       );
-    } else if (playerPosition().type === 'grass' || playerPosition().type === 'dungeon') {
-      print('You can\'t use steal in this context.', 'red')
+    } else if (
+      playerPosition().type === 'grass' ||
+      playerPosition().type === 'dungeon'
+    ) {
+      print("You can't use steal in this context.", 'red');
     }
   } else if (name === 'confuse') {
     if (
       player.level >= player.skills[indexOfSkill].requiredLevel &&
-      player.skills[indexOfSkill].cooldown === 10000
+      player.skills[indexOfSkill].cooldown === 10000 &&
+      playerPosition().type === 'monster'
     ) {
       let split = playerPosition().name.split('');
       let reversedNameArr = [];
@@ -414,6 +423,8 @@ function useSkill(name) {
           ' seconds to use Confuse again!',
         'red'
       );
+    } else if (playerPosition().type !== 'monster') {
+      print("You can't use Confuse in this context.", 'red');
     }
   }
 }
@@ -534,7 +545,7 @@ function checkTradesman() {
   for (let i = 0; i < board.length; i++) {
     for (let l = 0; l < board[i].length; l++) {
       if (board[i][l].type === 'tradesman') {
-      tradesmanCount++;
+        tradesmanCount++;
       }
     }
   }
@@ -543,7 +554,7 @@ function checkTradesman() {
     for (let i = 0; i < board.length; i++) {
       for (let l = 0; l < board[i].length; l++) {
         if (board[i][l].type === 'tradesman') {
-        tradesmanCount++;
+          tradesmanCount++;
         }
       }
     }
@@ -553,8 +564,8 @@ function checkTradesman() {
 function checkKeyMonster() {
   let keyMonsterCount = 0;
   for (let i = 0; i < board.length; i++) {
-      for (let l = 0; l < board[i].length; l++) {
-        if (board[i][l].type === 'keyMonster') {
+    for (let l = 0; l < board[i].length; l++) {
+      if (board[i][l].type === 'keyMonster') {
         keyMonsterCount++;
       }
     }
@@ -564,7 +575,7 @@ function checkKeyMonster() {
     for (let i = 0; i < board.length; i++) {
       for (let l = 0; l < board[i].length; l++) {
         if (board[i][l].type === 'keyMonster') {
-        keyMonsterCount++;
+          keyMonsterCount++;
         }
       }
     }
@@ -576,7 +587,7 @@ function checkMonster() {
   for (let i = 0; i < board.length; i++) {
     for (let l = 0; l < board[i].length; l++) {
       if (board[i][l].type === 'monster') {
-      monsterCount++;
+        monsterCount++;
       }
     }
   }
@@ -585,7 +596,7 @@ function checkMonster() {
     for (let i = 0; i < board.length; i++) {
       for (let l = 0; l < board[i].length; l++) {
         if (board[i][l].type === 'monster') {
-        monsterCount++;
+          monsterCount++;
         }
       }
     }
@@ -596,8 +607,12 @@ function checkItems() {
   let itemsCount = 0;
   for (let i = 0; i < board.length; i++) {
     for (let l = 0; l < board[i].length; l++) {
-      if (board[i][l].type === 'bomb' || board[i][l].type === 'potion' || board[i][l].type === 'key') {
-      itemsCount++;
+      if (
+        board[i][l].type === 'bomb' ||
+        board[i][l].type === 'potion' ||
+        board[i][l].type === 'key'
+      ) {
+        itemsCount++;
       }
     }
   }
@@ -605,8 +620,12 @@ function checkItems() {
     updateBoard(createItem());
     for (let i = 0; i < board.length; i++) {
       for (let l = 0; l < board[i].length; l++) {
-        if (board[i][l].type === 'bomb' || board[i][l].type === 'potion' || board[i][l].type === 'key') {
-        itemsCount++;
+        if (
+          board[i][l].type === 'bomb' ||
+          board[i][l].type === 'potion' ||
+          board[i][l].type === 'key'
+        ) {
+          itemsCount++;
         }
       }
     }
@@ -618,7 +637,7 @@ function checkDungeon() {
   for (let i = 0; i < board.length; i++) {
     for (let l = 0; l < board[i].length; l++) {
       if (board[i][l].type === 'dungeon' && board[i][l].isLocked === false) {
-      dungeon1Count++;
+        dungeon1Count++;
       }
     }
   }
@@ -627,7 +646,7 @@ function checkDungeon() {
     for (let i = 0; i < board.length; i++) {
       for (let l = 0; l < board[i].length; l++) {
         if (board[i][l].type === 'dungeon' && board[i][l].isLocked === false) {
-        dungeon1Count++;
+          dungeon1Count++;
         }
       }
     }
@@ -636,7 +655,7 @@ function checkDungeon() {
   for (let i = 0; i < board.length; i++) {
     for (let l = 0; l < board[i].length; l++) {
       if (board[i][l].type === 'dungeon' && board[i][l].isLocked === true) {
-      dungeon2Count++;
+        dungeon2Count++;
       }
     }
   }
@@ -645,7 +664,7 @@ function checkDungeon() {
     for (let i = 0; i < board.length; i++) {
       for (let l = 0; l < board[i].length; l++) {
         if (board[i][l].type === 'dungeon' && board[i][l].isLocked === true) {
-        dungeon2Count++;
+          dungeon2Count++;
         }
       }
     }
@@ -688,8 +707,10 @@ function printBoard() {
     for (let j = 0; j < board[i].length; j++) {
       if (i === player.position.row && j === player.position.column) {
         boardTile += 'P';
-      } else if (board[i][j].type === 'tradesman' ||
-        board[i][j].type === 'burglar') {
+      } else if (
+        board[i][j].type === 'tradesman' ||
+        board[i][j].type === 'burglar'
+      ) {
         boardTile += 'T';
       } else if (
         board[i][j].type === 'monster' ||
@@ -966,9 +987,9 @@ function move(direction) {
     print('Oh no! You met a burglar posing as a tradesman!', 'red');
     print('He stole half your items and gold!', 'red');
     for (let i = 0; i < player.items.length / 2; i++) {
-        playerPosition().items.push(player.items[i]);
-        player.items.splice(i, 1);
-      }
+      playerPosition().items.push(player.items[i]);
+      player.items.splice(i, 1);
+    }
     playerPosition().gold = Math.floor(player.gold / 2);
     player.gold = Math.ceil(player.gold / 2);
   }
@@ -1034,7 +1055,9 @@ function battle() {
       clearInterval(playerAttackID);
       print('You beat the ' + playerPosition().name + '!', 'blue');
       print(
-        'Congratulations! You received 10xp, ' + playerPosition().gold + ' gold, and the following items:',
+        'Congratulations! You received 10xp, ' +
+          playerPosition().gold +
+          ' gold, and the following items:',
         'blue'
       );
       for (let i = 0; i < playerPosition().items.length; i++) {
