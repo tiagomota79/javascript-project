@@ -333,7 +333,7 @@ function useSkill(name) {
   if (name === 'steal') {
     if (
       player.level >= player.skills[indexOfSkill].requiredLevel &&
-      player.skills[indexOfSkill].cooldown === 25000
+      player.skills[indexOfSkill].cooldown === 25000 && playerPosition().type !== 'grass' && playerPosition().type !== 'dungeon'
     ) {
       for (let i = 0; i < playerPosition().items.length; i++) {
         if (playerPosition().items[i].rarity <= 1) {
@@ -345,6 +345,11 @@ function useSkill(name) {
         }
       }
       print('Steal successful. You thief!', 'blue');
+      if (playerPosition().type === 'burglar') {
+        player.gold = player.gold + playerPosition().gold;
+        playerPosition().gold = 0;
+        print('If you steal from a burglar, what are you?', 'blue');
+      }
       player.skills[indexOfSkill].cooldown = 0;
       let cooldownID = setInterval(cooldown, 1000);
       function cooldown() {
@@ -363,6 +368,8 @@ function useSkill(name) {
           ' seconds to steal something again!',
         'red'
       );
+    } else if (playerPosition().type === 'grass' || playerPosition().type === 'dungeon') {
+      print('You can\'t use steal in this context.', 'red')
     }
   } else if (name === 'confuse') {
     if (
@@ -503,6 +510,7 @@ function placePlayer() {
 function placeOther() {
   autoEntities();
   updateBoard(createTradesman());
+  updateBoard(createBurglar());
   for (let i = 0; i < itemsNum; i++) {
     updateBoard(createItem());
   }
@@ -510,9 +518,138 @@ function placeOther() {
     updateBoard(createMonster());
   }
   updateBoard(createKeyMonster());
-  updateAttackSpeed();
   updateBoard(createDungeon1());
   updateBoard(createDungeon2());
+  checkMonster();
+  checkItems();
+  checkDungeon();
+  checkKeyMonster();
+  checkTradesman();
+  updateAttackSpeed();
+}
+
+// Series of check functions to create entities that might have been overwritten by random placement by another entity.
+function checkTradesman() {
+  let tradesmanCount = 0;
+  for (let i = 0; i < board.length; i++) {
+    for (let l = 0; l < board[i].length; l++) {
+      if (board[i][l].type === 'tradesman') {
+      tradesmanCount++;
+      }
+    }
+  }
+  while (tradesmanCount < 0) {
+    updateBoard(createTradesman());
+    for (let i = 0; i < board.length; i++) {
+      for (let l = 0; l < board[i].length; l++) {
+        if (board[i][l].type === 'tradesman') {
+        tradesmanCount++;
+        }
+      }
+    }
+  }
+}
+
+function checkKeyMonster() {
+  let keyMonsterCount = 0;
+  for (let i = 0; i < board.length; i++) {
+      for (let l = 0; l < board[i].length; l++) {
+        if (board[i][l].type === 'keyMonster') {
+        keyMonsterCount++;
+      }
+    }
+  }
+  while (keyMonsterCount < 0) {
+    updateBoard(createKeyMonster());
+    for (let i = 0; i < board.length; i++) {
+      for (let l = 0; l < board[i].length; l++) {
+        if (board[i][l].type === 'keyMonster') {
+        keyMonsterCount++;
+        }
+      }
+    }
+  }
+}
+
+function checkMonster() {
+  let monsterCount = 0;
+  for (let i = 0; i < board.length; i++) {
+    for (let l = 0; l < board[i].length; l++) {
+      if (board[i][l].type === 'monster') {
+      monsterCount++;
+      }
+    }
+  }
+  while (monsterCount < monsterNum) {
+    updateBoard(createMonster());
+    for (let i = 0; i < board.length; i++) {
+      for (let l = 0; l < board[i].length; l++) {
+        if (board[i][l].type === 'monster') {
+        monsterCount++;
+        }
+      }
+    }
+  }
+}
+
+function checkItems() {
+  let itemsCount = 0;
+  for (let i = 0; i < board.length; i++) {
+    for (let l = 0; l < board[i].length; l++) {
+      if (board[i][l].type === 'bomb' || board[i][l].type === 'potion' || board[i][l].type === 'key') {
+      itemsCount++;
+      }
+    }
+  }
+  while (itemsCount < itemsNum) {
+    updateBoard(createItem());
+    for (let i = 0; i < board.length; i++) {
+      for (let l = 0; l < board[i].length; l++) {
+        if (board[i][l].type === 'bomb' || board[i][l].type === 'potion' || board[i][l].type === 'key') {
+        itemsCount++;
+        }
+      }
+    }
+  }
+}
+
+function checkDungeon() {
+  let dungeon1Count = 0;
+  for (let i = 0; i < board.length; i++) {
+    for (let l = 0; l < board[i].length; l++) {
+      if (board[i][l].type === 'dungeon' && board[i][l].isLocked === false) {
+      dungeon1Count++;
+      }
+    }
+  }
+  while (dungeon1Count === 0) {
+    updateBoard(createDungeon1());
+    for (let i = 0; i < board.length; i++) {
+      for (let l = 0; l < board[i].length; l++) {
+        if (board[i][l].type === 'dungeon' && board[i][l].isLocked === false) {
+        dungeon1Count++;
+        }
+      }
+    }
+  }
+  let dungeon2Count = 0;
+  for (let i = 0; i < board.length; i++) {
+    for (let l = 0; l < board[i].length; l++) {
+      if (board[i][l].type === 'dungeon' && board[i][l].isLocked === true) {
+      dungeon2Count++;
+      }
+    }
+  }
+  while (dungeon2Count === 0) {
+    updateBoard(createDungeon2());
+    for (let i = 0; i < board.length; i++) {
+      for (let l = 0; l < board[i].length; l++) {
+        if (board[i][l].type === 'dungeon' && board[i][l].isLocked === true) {
+        dungeon2Count++;
+        }
+      }
+    }
+  }
 }
 
 // Creates the board and places player
@@ -551,7 +688,8 @@ function printBoard() {
     for (let j = 0; j < board[i].length; j++) {
       if (i === player.position.row && j === player.position.column) {
         boardTile += 'P';
-      } else if (board[i][j].type === 'tradesman') {
+      } else if (board[i][j].type === 'tradesman' ||
+        board[i][j].type === 'burglar') {
         boardTile += 'T';
       } else if (
         board[i][j].type === 'monster' ||
@@ -634,6 +772,7 @@ function createMonster() {
     level: player.level,
     items: monsterItems,
     position: randomPosition(),
+    gold: Math.floor(Math.random() * (150 - 30)) + 30,
   };
 }
 
@@ -645,6 +784,7 @@ function createKeyMonster() {
     level: player.level + 2,
     items: [items[6], items[8]],
     position: randomPosition(),
+    gold: 150,
   };
 }
 
@@ -656,6 +796,18 @@ function createTradesman() {
     hp: Infinity,
     type: 'tradesman',
     items: cloneArray(items),
+    position: randomPosition(),
+  };
+}
+
+// Creates a burglar: an object with the same identification as the tradesman. hp is Infinity
+// The items property will need to be a new array of cloned item objects
+function createBurglar() {
+  return {
+    name: 'Burglar',
+    hp: Infinity,
+    type: 'burglar',
+    items: [],
     position: randomPosition(),
   };
 }
@@ -746,7 +898,7 @@ function dungeon() {
     }
     playerPosition().items = [];
     print(playerPosition().gold + ' gold', 'blue');
-    player.gold = player.gold + playerPosition().gold;
+    player.gold += playerPosition().gold;
     playerPosition().gold = 0;
   } else if (
     playerPosition().isLocked === false &&
@@ -810,6 +962,16 @@ function move(direction) {
     );
     print('You have ' + player.gold + ' gold', 'blue');
   }
+  if (board[newPosition.row][newPosition.column].type === 'burglar') {
+    print('Oh no! You met a burglar posing as a tradesman!', 'red');
+    print('He stole half your items and gold!', 'red');
+    for (let i = 0; i < player.items.length / 2; i++) {
+        playerPosition().items.push(player.items[i]);
+        player.items.splice(i, 1);
+      }
+    playerPosition().gold = Math.floor(player.gold / 2);
+    player.gold = Math.ceil(player.gold / 2);
+  }
   if (
     board[newPosition.row][newPosition.column].type === 'monster' ||
     board[newPosition.row][newPosition.column].type === 'keyMonster'
@@ -872,13 +1034,14 @@ function battle() {
       clearInterval(playerAttackID);
       print('You beat the ' + playerPosition().name + '!', 'blue');
       print(
-        'Congratulations! You received 10xp and the following items:',
+        'Congratulations! You received 10xp, ' + playerPosition().gold + ' gold, and the following items:',
         'blue'
       );
       for (let i = 0; i < playerPosition().items.length; i++) {
         print(playerPosition().items[i].name, 'blue');
         player.items.push(playerPosition().items[i]);
       }
+      player.gold += playerPosition().gold;
       board[player.position.row].splice([player.position.column], 1, {
         type: 'grass',
         position: player.position,
@@ -978,7 +1141,7 @@ print(
 );
 print(' ');
 print(
-  '3- KEY MONSTER: No item generated on the board will be the Epic key. One monster will always hold the Epic key and have a level 2 points over the player. Other monsters will carry three random items - but never the key - and have the same level of the player when the game starts.',
+  '3- KEY MONSTER: No item generated on the board will be the Epic key. One monster will always hold the Epic key, a Rare bomb, 150 gold and have a level 2 points over the player. Other monsters will carry gold - random number between 30 and 150 - three random items - but never the key - and have the same level of the player when the game starts.',
   'red'
 );
 print(' ');
@@ -994,6 +1157,11 @@ print(
 print(' ');
 print(
   "5- ITEMS USE: Potions will always take effect on the player. Bombs will always assume the use is on the entity at the player position; if the player is over grass, the bomb will affect the player. If the player tried to use a bomb on a dungeon or the tradesman, a message will be shown alerting the player the bomb can't be used in this context, but the bomb won't be consumed. So, the useItem function doesn't require a target as argument, only the name of the item.",
+  'red'
+);
+print(' ');
+print(
+  "6- BURGLAR: A second 'T' on the board will be a burglar: it will steal half the player items - the first half on the list - and half the player's gold. Depending on the player level, it's possible to steal back items rarity 1 or below and the gold.",
   'red'
 );
 print(' ');
